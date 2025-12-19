@@ -161,7 +161,7 @@ const ProductDetails = () => {
             loading ? (
               <div className='grid w-full gap-1'>
                 <p className='inline-block w-full h-6 rounded-full bg-slate-200 animate-pulse lg:h-8'></p>
-                <h2 className='w-full h-6 text-2xl font-medium lg:text-4xl lg:h-8 bg-slate-200 animate-pulse'></h2>
+                <h2 className='w-full h-6 text-2xl font-medium lg:text-4xl lg:h-8 bg-slate-200 animate-pulse' aria-label="Loading product title">&nbsp;</h2>
                 <p className='capitalize text-slate-400 bg-slate-200 min-w-[100px] animate-pulse h-6 lg:h-8  w-full'></p>
 
                 <div className='flex items-center w-full h-6 gap-1 text-blue-600 bg-slate-200 lg:h-8 animate-pulse'>
