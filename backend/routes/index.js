@@ -78,7 +78,10 @@ router.get("/debug-orders", async (req, res) => {
 })
 
 router.post("/update", async (req, res) => {
-    
+    res.status(400).json({
+        success: false,
+        message: "Update endpoint not implemented"
+    })
 })
 
 // Debug endpoint to check orders
@@ -101,8 +104,5 @@ router.get("/debug/orders", async (req, res) => {
         })
     }
 })
-
-module.exports = router
-
 
 module.exports = router
