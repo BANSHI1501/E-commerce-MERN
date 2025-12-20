@@ -11,12 +11,31 @@ const app = express()
 console.log("CORS Origin:", process.env.FRONTEND_URL)
 console.log("NODE_ENV:", process.env.NODE_ENV)
 
-// Enhanced CORS for production
-app.use(cors({
-    origin : ['http://localhost:3000', 'https://e-commerce-mern-bgp7.vercel.app/'],
-    credentials : true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
-}))
+// Trust proxy (useful on Render / behind proxies)
+app.set('trust proxy', true)
+
+// Dynamic CORS config using FRONTEND_URL (no trailing slash) and localhost
+const allowedOrigins = ['http://localhost:3000']
+if (process.env.FRONTEND_URL) {
+	allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/+$/, ''))
+}
+
+const corsOptions = {
+	origin: (origin, callback) => {
+		console.log('Incoming Origin:', origin)
+		// allow requests with no origin (curl, server-to-server) and allowed origins
+		if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
+		return callback(new Error('CORS policy: This origin is not allowed'))
+	},
+	credentials: true,
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}
+
+// Use CORS and explicitly enable preflight handling
+app.use(cors(corsOptions))
+app.options('*', cors(corsOptions))
+
 app.use(express.json({limit: '50mb'}))
 app.use(express.urlencoded({limit: '50mb', extended: true}))
 app.use(cookieParser())
