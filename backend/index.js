@@ -17,24 +17,60 @@ app.set('trust proxy', true)
 // Dynamic CORS config using FRONTEND_URL (no trailing slash) and localhost
 const allowedOrigins = ['http://localhost:3000']
 if (process.env.FRONTEND_URL) {
-	allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/+$/, ''))
+    allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/+$/, ''))
 }
 
+// Regex for matching localhost origins (any port)
+const localhostRegex = /^https?:\/\/(localhost|127\.0\.1|127\.0\.0\.1)(:\d+)?$/
+
 const corsOptions = {
-	origin: (origin, callback) => {
-		console.log('Incoming Origin:', origin)
-		// allow requests with no origin (curl, server-to-server) and allowed origins
-		if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
-		return callback(new Error('CORS policy: This origin is not allowed'))
-	},
-	credentials: true,
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+    origin: (origin, callback) => {
+        console.log('Incoming Origin:', origin)
+        // allow requests with no origin (curl, server-to-server)
+        if (!origin) return callback(null, true)
+
+        // allow explicitly configured origins
+        if (allowedOrigins.includes(origin)) return callback(null, true)
+
+        // during development accept any localhost origin (any port)
+        if (process.env.NODE_ENV !== 'production' && localhostRegex.test(origin)) return callback(null, true)
+
+        return callback(new Error('CORS policy: This origin is not allowed'))
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }
 
 // Use CORS and explicitly enable preflight handling
 app.use(cors(corsOptions))
 app.options('*', cors(corsOptions))
+
+// Middleware: explicit CORS response headers + logging for debugging
+app.use((req, res, next) => {
+    const origin = req.get('Origin')
+    console.log(`[CORS DEBUG] ${req.method} ${req.path} - Origin:`, origin)
+
+    if (origin) {
+        // allow if included in allowedOrigins or matches localhost during dev
+        if (allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && localhostRegex.test(origin))) {
+            res.setHeader('Access-Control-Allow-Origin', origin)
+            res.setHeader('Access-Control-Allow-Credentials', 'true')
+            res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept')
+        } else {
+            console.warn(`[CORS DEBUG] Blocking origin: ${origin}`)
+        }
+    }
+
+    // Immediately respond to preflight requests to ensure proper headers
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204)
+    }
+
+    app.set('json spaces', 0)
+    next()
+})
 
 app.use(express.json({limit: '50mb'}))
 app.use(express.urlencoded({limit: '50mb', extended: true}))
