@@ -105,4 +105,15 @@ router.get("/debug/orders", async (req, res) => {
     }
 })
 
+// Debug: test error endpoint to verify error handling and responses
+router.get('/test-error', (req, res, next) => {
+    try {
+        // Create an intentional error to test global error handler
+        throw new Error('Intentional test error from backend')
+    } catch (err) {
+        // Pass to global error handler
+        next(err)
+    }
+})
+
 module.exports = router
