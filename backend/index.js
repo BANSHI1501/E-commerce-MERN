@@ -15,7 +15,7 @@ console.log("NODE_ENV:", process.env.NODE_ENV)
 app.set('trust proxy', true)
 
 // Dynamic CORS config using FRONTEND_URL (no trailing slash) and localhost
-const allowedOrigins = ['http://localhost:3000']
+const allowedOrigins = ['http://localhost:3000','https://e-commerce-mern-emllvpq8r-banshi-s-projects.vercel.app','https://e-commerce-mern-git-main-banshi-s-projects.vercel.app']
 if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/+$/, ''))
 }
@@ -28,6 +28,13 @@ const corsOptions = {
         console.log('Incoming Origin:', origin)
         // allow requests with no origin (curl, server-to-server)
         if (!origin) return callback(null, true)
+
+        // If running in production but FRONTEND_URL is not configured,
+        // allow all origins temporarily to aid debugging (replace with explicit FRONTEND_URL in production).
+        if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
+            console.warn('FRONTEND_URL not set in production — allowing all origins for debugging')
+            return callback(null, true)
+        }
 
         // allow explicitly configured origins
         if (allowedOrigins.includes(origin)) return callback(null, true)
@@ -98,6 +105,9 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to Electronic Shop API", version: "1.0.0" })
 })
+
+// Serve empty favicon to avoid 404 log noise
+app.get('/favicon.ico', (req, res) => res.sendStatus(204))
 
 // Health check endpoint
 app.get("/health", (req, res) => {

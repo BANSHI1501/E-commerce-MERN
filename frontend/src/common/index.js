@@ -1,4 +1,7 @@
-const backendDomin = process.env.REACT_APP_BACKEND_URL || "http://localhost:8080"
+// Support both env var names: older `.env.example` used `REACT_APP_API_URL`,
+// while code previously expected `REACT_APP_BACKEND_URL`. Prefer explicit BACKEND var,
+// then the API var, then fall back to localhost for local dev.
+const backendDomin = process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_API_URL || "http://localhost:8080"
 
 const SummaryApi = {
     signUP: {
