@@ -12,7 +12,7 @@ export default function About() {
 
         {/* Image */}
         <img
-          src="/pic1.png"
+          src="/logo.jpeg"
           alt="Logo"
           className="w-24 rounded-full shadow-lg md:w-32"
         />
