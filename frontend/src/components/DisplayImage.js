@@ -15,7 +15,7 @@ const DisplayImage = ({
 
 
                 <div className='flex justify-center p-4 max-w-[80vh] max-h-[80vh]'>
-                <img src={imgUrl} alt='Full size product image' className='w-full h-full'/>
+                <img src={imgUrl} alt='Full size product' className='w-full h-full'/>
                 </div>
         </div>
   

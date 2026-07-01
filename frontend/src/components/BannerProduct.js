@@ -35,29 +35,36 @@ const BannerProduct = () => {
     ]
 
     const nextImage = () =>{
-        if(desktopImages.length - 1 > currentImage){
-            setCurrentImage(preve => preve + 1)
-        }
+        setCurrentImage(preve => {
+            if(desktopImages.length - 1 > preve){
+                return preve + 1
+            }
+            return 0
+        })
     }
 
     const preveImage = () =>{
-        if(currentImage !== 0){
-                setCurrentImage(preve => preve - 1)
+        setCurrentImage(preve => {
+            if(preve !== 0){
+                return preve - 1
             }
+            return desktopImages.length - 1
+        })
     }
 
 
     useEffect(()=>{
         const interval = setInterval(()=>{
-            if(desktopImages.length - 1 > currentImage){
-                nextImage()
-            }else{
-                setCurrentImage(0)
-            }
+            setCurrentImage(preve => {
+                if(desktopImages.length - 1 > preve){
+                    return preve + 1
+                }
+                return 0
+            })
         },5000)
 
         return ()=> clearInterval(interval)
-    },[currentImage, desktopImages.length])
+    },[desktopImages.length])
 
   return (
     <div className='container mx-auto px-4 rounded '>
