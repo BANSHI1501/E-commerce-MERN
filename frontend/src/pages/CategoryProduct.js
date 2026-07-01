@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import React, { useEffect, useState, useCallback } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import productCategory from '../helpers/productCategory'
 import VerticalCard from '../components/VerticalCard'
 import SummaryApi from '../common'
@@ -7,7 +7,6 @@ import SummaryApi from '../common'
 const CategoryProduct = () => {
     const [data,setData] = useState([])
     const navigate = useNavigate()
-    const [loading,setLoading] = useState(false)
     const location = useLocation()
     const urlSearch = new URLSearchParams(location.search)
     const urlCategoryListinArray = urlSearch.getAll("category")
@@ -22,7 +21,7 @@ const CategoryProduct = () => {
 
     const [sortBy,setSortBy] = useState("")
 
-    const fetchData = async()=>{
+    const fetchData = useCallback(async()=>{
       const response = await fetch(SummaryApi.filterProduct.url,{
         method : SummaryApi.filterProduct.method,
         headers : {
@@ -35,10 +34,10 @@ const CategoryProduct = () => {
 
       const dataResponse = await response.json()
       setData(dataResponse?.data || [])
-    }
+    },[filterCategoryList])
 
     const handleSelectCategory = (e) =>{
-      const {name , value, checked} =  e.target
+      const { value, checked } =  e.target
 
       setSelectCategory((preve)=>{
         return{
@@ -50,15 +49,17 @@ const CategoryProduct = () => {
 
     useEffect(()=>{
       fetchData()
-    },[filterCategoryList])
+    },[fetchData])
 
     useEffect(()=>{
-      const arrayOfCategory = Object.keys(selectCategory).map(categoryKeyName =>{
-        if(selectCategory[categoryKeyName]){
-          return categoryKeyName
-        }
-        return null
-      }).filter(el => el)
+      const arrayOfCategory = Object.keys(selectCategory)
+        .map(categoryKeyName => {
+          if(selectCategory[categoryKeyName]){
+            return categoryKeyName
+          }
+          return null
+        })
+        .filter(el => el)
 
       setFilterCategoryList(arrayOfCategory)
 
@@ -71,7 +72,7 @@ const CategoryProduct = () => {
       })
 
       navigate("/product-category?"+urlFormat.join(""))
-    },[selectCategory])
+    },[selectCategory, navigate])
 
 
     const handleOnChangeSortBy = (e)=>{
@@ -88,10 +89,6 @@ const CategoryProduct = () => {
       }
     }
 
-    useEffect(()=>{
-
-    },[sortBy])
-    
   return (
     <div className='container mx-auto p-4'>
 
@@ -125,7 +122,7 @@ const CategoryProduct = () => {
                         {
                           productCategory.map((categoryName,index)=>{
                             return(
-                              <div className='flex items-center gap-3'>
+                              <div key={categoryName?.value || index} className='flex items-center gap-3'>
                                  <input type='checkbox' name={"category"} checked={selectCategory[categoryName?.value]} value={categoryName?.value} id={categoryName?.value} onChange={handleSelectCategory} />
                                  <label htmlFor={categoryName?.value}>{categoryName?.label}</label>
                               </div>
@@ -144,11 +141,9 @@ const CategoryProduct = () => {
               <p className='font-medium text-slate-800 text-lg my-2'>Search Results : {data.length}</p>
 
              <div className='min-h-[calc(100vh-120px)] overflow-y-scroll max-h-[calc(100vh-120px)]'>
-              {
-                  data.length !== 0 && !loading && (
-                    <VerticalCard data={data} loading={loading}/>
-                  )
-              }
+              {data.length !== 0 && (
+                <VerticalCard data={data} />
+              )}
              </div>
             </div>
        </div>
