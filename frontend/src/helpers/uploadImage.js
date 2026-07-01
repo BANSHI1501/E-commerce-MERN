@@ -1,18 +1,23 @@
 const uploadImage = async(image) => {
     try {
-        const cloudName = process.env.REACT_APP_CLOUD_NAME_CLOUDINARY
+        const cloudName =
+            process.env.REACT_APP_CLOUD_NAME_CLOUDINARY ||
+            process.env.REACT_APP_CLOUDINARY_CLOUD_NAME ||
+            process.env.REACT_APP_CLOUD_NAME
+        const uploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET || "unsigned"
+        const folder = process.env.REACT_APP_CLOUDINARY_FOLDER || "BholaEnterprises"
         
         if (!cloudName) {
-            console.error('Error: REACT_APP_CLOUD_NAME_CLOUDINARY not set in .env')
-            return { error: 'Cloudinary not configured' }
+            console.error('Error: Cloudinary cloud name is not set in frontend environment variables')
+            return { error: 'Cloudinary not configured. Set the cloud name in the frontend environment variables.' }
         }
 
         const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
         
         const formData = new FormData()
         formData.append("file", image)
-        formData.append("upload_preset", "unsigned")  // Must match the preset name you created in Cloudinary
-        formData.append("folder", "BholaEnterprises") // Optional: specify folder in Cloudinary
+        formData.append("upload_preset", uploadPreset)
+        formData.append("folder", folder)
 
         console.log('📤 Uploading to Cloudinary...')
         const response = await fetch(url, {
